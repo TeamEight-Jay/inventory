@@ -1,5 +1,7 @@
 package com.teamfive.inventory.entity;
 
+import com.teamfive.inventory.dto.MerchantDTO;
+import com.teamfive.inventory.dto.ProductDTO;
 import org.springframework.data.annotation.Id;
 
 import javax.persistence.Entity;
@@ -16,8 +18,24 @@ public static final String TABLE_NAME="Inventory";
     private Integer quantitySold;
     private String price;
 
+  private ProductDTO productDTO;
+    private MerchantDTO merchantDTO;
 
+    public ProductDTO getProductDTO() {
+        return productDTO;
+    }
 
+    public void setProductDTO(ProductDTO productDTO) {
+        this.productDTO = productDTO;
+    }
+
+    public MerchantDTO getMerchantDTO() {
+        return merchantDTO;
+    }
+
+    public void setMerchantDTO(MerchantDTO merchantDTO) {
+        this.merchantDTO = merchantDTO;
+    }
 
     public String getuId() {
         return uId;
