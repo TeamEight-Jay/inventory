@@ -5,7 +5,6 @@ public class InventoryDTO {
     private String productId;
     private String merchantId;
     private Integer quantityLeft;
-    private Integer quantitySold;
     private Integer price;
 
 
@@ -33,14 +32,6 @@ public class InventoryDTO {
         this.quantityLeft = quantityLeft;
     }
 
-    public Integer getQuantitySold() {
-        return quantitySold;
-    }
-
-    public void setQuantitySold(Integer quantitySold) {
-        this.quantitySold = quantitySold;
-    }
-
     public Integer getPrice() {
         return price;
     }
@@ -55,7 +46,6 @@ public class InventoryDTO {
                 "productId='" + productId + '\'' +
                 ", merchantId='" + merchantId + '\'' +
                 ", quantityLeft=" + quantityLeft +
-                ", quantitySold=" + quantitySold +
                 ", price=" + price +
                 '}';
     }
