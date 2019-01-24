@@ -56,7 +56,13 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(readOnly = false)
     public Inventory updateInventory(Inventory inventory) {
         inventoryRepository.save(inventory);
-
+        InventoryUpdateKafkaMessage inventoryUpdateKafkaMessage=new InventoryUpdateKafkaMessage();
+        inventoryUpdateKafkaMessage.setAction("INSTOCK");
+        inventoryUpdateKafkaMessage.setMessage(inventory.getProductId()+"|"
+                +inventory.getInventoryId() +"|"
+                +inventory.getInventoryRating() +"|"
+                +inventory.getPrice());
+        inventoryKafka.send("INVENTORY",inventoryUpdateKafkaMessage);
         return inventory;
     }
 
@@ -80,10 +86,10 @@ public class InventoryServiceImpl implements InventoryService {
 
         if(inventory==null) return "ITEM NOT FOUND";
 
-        if(quantity>inventory.getQuantityLeft()) return "MAX AVAILIABLE QUANTIY IS "+inventory.getQuantityLeft();
+        if(quantity>inventory.getQuantityLeft()) return "MAX AVAILABLE QUANTITY IS "+inventory.getQuantityLeft();
 
         inventory.setQuantitySold(inventory.getQuantitySold()+quantity);
-        inventory.setQuantityLeft(inventory.getQuantitySold()-quantity);
+        inventory.setQuantityLeft(inventory.getQuantityLeft()-quantity);
         inventory=this.updateInventory(inventory);
         if(inventory.getQuantityLeft()==0)
         {
