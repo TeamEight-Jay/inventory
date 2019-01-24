@@ -29,14 +29,26 @@ public class InventoryServiceImpl implements InventoryService {
     @Transactional(readOnly = false)
     public Inventory addInventory(Inventory inventory) {
         inventoryRepository.save(inventory);
+        InventoryUpdateKafkaMessage inventoryUpdateKafkaMessage=new InventoryUpdateKafkaMessage();
+        inventoryUpdateKafkaMessage.setAction("INSTOCK");
+        inventoryUpdateKafkaMessage.setMessage(inventory.getProductId()+"|"
+                +inventory.getInventoryId() +"|"
+                +inventory.getInventoryRating() +"|"
+                +inventory.getPrice());
+        inventoryKafka.send("INVENTORY",inventoryUpdateKafkaMessage);
         return inventory;
     }
 
     @Override
     @Transactional(readOnly = false)
     public void deleteInventory(String uId) {
-
+        Inventory inventory=this.selectInventory(uId);
+        if(inventory==null) return;
         inventoryRepository.delete(uId);
+        InventoryUpdateKafkaMessage inventoryUpdateKafkaMessage=new InventoryUpdateKafkaMessage();
+        inventoryUpdateKafkaMessage.setAction("OUTOFSTOCK");
+        inventoryUpdateKafkaMessage.setMessage(inventory.getProductId()+"|"+inventory.getInventoryId());
+        inventoryKafka.send("INVENTORY",inventoryUpdateKafkaMessage);
 
     }
 
@@ -62,19 +74,27 @@ public class InventoryServiceImpl implements InventoryService {
 
     @Override
     @Transactional(readOnly = false)
-    public void decrementQuantity(String inventoryId, int quantity) {
+    public String decrementQuantity(String inventoryId, int quantity) {
+
         Inventory inventory=this.selectInventory(inventoryId);
+
+        if(inventory==null) return "ITEM NOT FOUND";
+
+        if(quantity>inventory.getQuantityLeft()) return "MAX AVAILIABLE QUANTIY IS "+inventory.getQuantityLeft();
+
         inventory.setQuantitySold(inventory.getQuantitySold()+quantity);
         inventory.setQuantityLeft(inventory.getQuantitySold()-quantity);
         inventory=this.updateInventory(inventory);
         if(inventory.getQuantityLeft()==0)
         {
             InventoryUpdateKafkaMessage inventoryUpdateKafkaMessage=new InventoryUpdateKafkaMessage();
-            inventoryUpdateKafkaMessage.setInventory(inventory);
             inventoryUpdateKafkaMessage.setAction("OUTOFSTOCK");
+            inventoryUpdateKafkaMessage.setMessage(inventory.getProductId()+"|"
+                    +inventory.getInventoryId());
             inventoryKafka.send("INVENTORY",inventoryUpdateKafkaMessage);
         }
-        //inventoryRepository.decrementQuantity(inventoryId,quantity);
+
+        return "SUCCESS";
     }
 
 

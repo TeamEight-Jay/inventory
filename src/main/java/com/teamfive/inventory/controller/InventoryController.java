@@ -2,6 +2,7 @@ package com.teamfive.inventory.controller;
 
 
 import com.teamfive.inventory.dto.InventoryDTO;
+import com.teamfive.inventory.dto.MerchantDTO;
 import com.teamfive.inventory.entity.Inventory;
 import com.teamfive.inventory.service.InventoryService;
 import org.springframework.beans.BeanUtils;
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 @RestController
 public class InventoryController {
 
-    private final String MERCHANT_ENDPOINT="http://10.177.7.88:5000/";
+    private final String MERCHANT_ENDPOINT="http://localhost:5000/";
 
     @Autowired
     InventoryService inventoryService;
@@ -26,15 +27,19 @@ public class InventoryController {
         BeanUtils.copyProperties(inventoryDTO,inventory);
 
         RestTemplate template=new RestTemplate();
-        String merchantCheckEndpoint=MERCHANT_ENDPOINT+"merchant/check?merchantId="+inventory.getMerchantId();
+        String merchantCheckEndpoint=MERCHANT_ENDPOINT+"merchant/get?merchantId="+inventory.getMerchantId();
 
-        String merchantName=template.getForEntity(merchantCheckEndpoint,String.class).getBody();
+        MerchantDTO merchantDTO=template.getForEntity(merchantCheckEndpoint,MerchantDTO.class).getBody();
 
-        inventory.setMerchantName(merchantName);
+        if(merchantDTO.getMerchantId()==null) return new InventoryDTO();
+
+        inventory.setMerchantName(merchantDTO.getMerchantName());
         inventory.setQuantitySold(0);
-        inventory.setInventoryRating(2.5f);
+        inventory.setInventoryRating(merchantDTO.getMerchantRating());
 
         inventoryService.addInventory(inventory);
+
+
         return inventoryDTO;
     }
 
@@ -59,7 +64,7 @@ public class InventoryController {
 
     }
 
-    @PostMapping("/inventory/delete")
+    @DeleteMapping("/inventory/delete/{uId}")
     public void deleteInventory(@PathVariable String uId){
         inventoryService.deleteInventory(uId);
     }
@@ -70,10 +75,10 @@ public class InventoryController {
         return inventoryService.findByProductId(productId);
     }
 
-    @GetMapping("inventory/placeorder/")
-    public void placeorder(@RequestParam String inventoryID,@RequestParam int quantity)
+    @GetMapping("inventory/placeorder/{inventoryId}/{quantity}")
+    public String placeorder(@PathVariable String inventoryId,@PathVariable Integer quantity)
     {
-        inventoryService.decrementQuantity(inventoryID,quantity);
+        return inventoryService.decrementQuantity(inventoryId,quantity);
     }
 
 

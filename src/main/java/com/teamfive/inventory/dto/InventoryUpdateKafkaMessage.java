@@ -4,7 +4,7 @@ import com.teamfive.inventory.entity.Inventory;
 
 public class InventoryUpdateKafkaMessage {
     private String action;
-    private Inventory inventory;
+    private String message;
 
 
     public String getAction() {
@@ -15,19 +15,19 @@ public class InventoryUpdateKafkaMessage {
         this.action = action;
     }
 
-    public Inventory getInventory() {
-        return inventory;
+    public String getMessage() {
+        return message;
     }
 
-    public void setInventory(Inventory inventory) {
-        this.inventory = inventory;
+    public void setMessage(String message) {
+        this.message = message;
     }
 
     @Override
     public String toString() {
         return "InventoryUpdateKafkaMessage{" +
                 "action='" + action + '\'' +
-                ", inventory=" + inventory +
+                ", message='" + message + '\'' +
                 '}';
     }
 }

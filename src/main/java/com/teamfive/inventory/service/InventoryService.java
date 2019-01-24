@@ -12,6 +12,6 @@ public interface InventoryService {
     public Inventory updateInventory(Inventory inventory);
     public Inventory selectInventory(String uId);
     public ArrayList<Inventory> findByProductId(String productId);
-    public void decrementQuantity(String inventoryId,int quantity);
+    public String decrementQuantity(String inventoryId,int quantity);
 
 }
